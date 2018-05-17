@@ -1,6 +1,16 @@
 ### Public content
 https://devdocs.magento.com/guides/v2.2/extension-dev-guide/cache/page-caching/public-content.html
 
+#### How does it work: 
+1. [M2] generate page and insert "esi" tags instead of blocks that has TTL (check \Magento\PageCache\Observer\ProcessLayoutRenderElement::execute) 
+2. [Varnish] process "esi" tags by source urls and insert content from source urls into page 
+3. [End user] get page from Varnish 
+
+#### When FPC works:
+FPC is Enabled && Current route is cacheable (check below) && Varnish is enabled.
+
+#### When block be retrieved using ESI (M2 FPC):
+FPC works (prev point) && Block has TTL 
 
 #### Not cacheable route:
 1. Has 'cachable="false"' block in layout.
@@ -21,3 +31,8 @@ https://devdocs.magento.com/guides/v2.2/extension-dev-guide/cache/page-caching/p
 2. Have cache tags, which could depends on model identity.
 3. After model changing, invalidate corresponding (by identity) block.
 
+------------------------
+
+#### FPC is NOT a `private content`:
+1. Only public content is cached using FPC. Any user related data is cached using private content.
+2. FPC stores cache on server and generate page on server using Varnish. Private content use AJAX calls to get needed data and store cache on local storage in browser.
